@@ -198,6 +198,10 @@ public class GitHubRepositoryManager implements RepositoryAndContributorManager 
             System.out.println("Entered url is invalid. Please try with proper url");
             return false;
         }
+        else if(httpResponse.statusCode() == 401) {
+            System.err.println("Authorization problem, please check the API Key that is located under UrlsUtil class");
+            return false;
+        }
         else if(httpResponse.statusCode() != 200) {
             System.out.println("Http Response for the related request is not suitable try again later");
             return false;
