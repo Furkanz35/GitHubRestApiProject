@@ -1,11 +1,11 @@
 package org.hititGithubApiProject;
 
-import org.hititGithubApiProject.RepositoryManager.RepositoryManager;
+import org.hititGithubApiProject.apimanager.RepositoryAndContributorManager;
 import org.hititGithubApiProject.exceptions.ArgumentCheck;
 import org.hititGithubApiProject.exceptions.InvalidArgumentCountException;
-import org.hititGithubApiProject.factories.RepositoryManagerFactory;
+import org.hititGithubApiProject.factories.RepositoryAndContributorManagerFactory;
 import org.hititGithubApiProject.factories.WriterFactory;
-import org.hititGithubApiProject.urls.AbstractUrlsUtil;
+import org.hititGithubApiProject.urls.UrlsUtil;
 import org.hititGithubApiProject.writer.Writer;
 
 public class Main {
@@ -21,18 +21,21 @@ public class Main {
         int mostForkedRepositoryCount = Integer.parseInt(args[1]);
         int numberOfContributors = Integer.parseInt(args[2]);
 
-        RepositoryManager repositoryManager = RepositoryManagerFactory.getRepositoryManagerInstance();
+        RepositoryAndContributorManager repositoryAndContributorManager = RepositoryAndContributorManagerFactory.getRepositoryManagerInstance();
 
-        String repositoriesUrl = AbstractUrlsUtil.getUrlForRepository(organization);
+        String repositoriesUrl = UrlsUtil.getUrlForRepository(organization);
 
-        repositoryManager.findMostForkedRepositories(repositoriesUrl, mostForkedRepositoryCount);
-        repositoryManager.findTopContributorsOfRepositories(AbstractUrlsUtil.getReposContributorsUrls(repositoryManager.getRepositoryList()), numberOfContributors);
-        repositoryManager.displayMostForkedRepositories();
-        repositoryManager.displayTopContirbutorsOfRepositories();
+        repositoryAndContributorManager.findMostForkedRepositories(repositoriesUrl, mostForkedRepositoryCount);
+        repositoryAndContributorManager.findTopContributorsOfRepositories(
+                UrlsUtil.getReposContributorsUrls(
+                repositoryAndContributorManager.getRepositoryList()),
+                numberOfContributors);
+        repositoryAndContributorManager.displayMostForkedRepositories();
+        repositoryAndContributorManager.displayTopContirbutorsOfRepositories();
 
         Writer cswWriter = WriterFactory.getWriterInstance();
-        cswWriter.writeRepositoryDomainObjects(repositoryManager.getRepositoryDomainObjectList(), organization);
-        cswWriter.writeContributorDomainObjects(repositoryManager.getContributorDomainObjectList(), organization);
+        cswWriter.writeRepositoryDomainObjects(repositoryAndContributorManager.getRepositoryDomainObjectList(), organization);
+        cswWriter.writeContributorDomainObjects(repositoryAndContributorManager.getContributorDomainObjectList(), organization);
     }
 }
 

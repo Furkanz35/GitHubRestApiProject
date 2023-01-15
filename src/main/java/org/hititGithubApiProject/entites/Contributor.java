@@ -6,7 +6,7 @@ public class Contributor {
     private String url;
     private int contributions;
 
-    private String repository = null;
+    private String repository;
 
 
     public String getLogin() {

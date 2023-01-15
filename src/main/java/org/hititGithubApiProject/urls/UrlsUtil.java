@@ -8,14 +8,17 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractUrlsUtil {
+public class UrlsUtil {
+    private UrlsUtil(){}
+
+    public static final String AUTHORIZATION_API_KEY = "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";
     public static final String REPO_BASE_URL = "https://api.github.com/orgs/";
     public static final String REPO_SUB_URL = "/repos";
 
     private static  URIBuilder ub = null;
 
     public static String getUrlForRepository(String organization){
-        return AbstractUrlsUtil.REPO_BASE_URL + organization + AbstractUrlsUtil.REPO_SUB_URL;
+        return UrlsUtil.REPO_BASE_URL + organization + UrlsUtil.REPO_SUB_URL;
     }
 
     public static List<String> getReposContributorsUrls(List<Repository> repositoryList){

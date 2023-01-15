@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import com.opencsv.CSVWriter;
 
-public class CswWriter implements Writer{
+public class CsvWriter implements Writer{
 
-    private CSVWriter writer = null;
+    private CSVWriter writer;
 
     @Override
     public void writeRepositoryDomainObjects(List<RepositoryDomainObject> repositoryDomainObjectList, String organizationName) {

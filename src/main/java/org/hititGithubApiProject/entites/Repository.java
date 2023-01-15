@@ -5,7 +5,6 @@ public class Repository {
     private String description;
     private String url;
     private int forks_count;
-    private Owner owner;
 
     private String contributors_url;
 
@@ -27,10 +26,6 @@ public class Repository {
 
     public int getForks_count() {
         return forks_count;
-    }
-
-    public Owner getOwner() {
-        return owner;
     }
 
 

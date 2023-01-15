@@ -1,4 +1,4 @@
-package org.hititGithubApiProject.RepositoryManager;
+package org.hititGithubApiProject.apimanager;
 
 import org.hititGithubApiProject.domainObjects.ContributorDomainObject;
 import org.hititGithubApiProject.domainObjects.RepositoryDomainObject;
@@ -7,7 +7,7 @@ import org.hititGithubApiProject.entites.Repository;
 
 import java.util.List;
 
-public interface RepositoryManager {
+public interface RepositoryAndContributorManager {
 
     List<RepositoryDomainObject> findMostForkedRepositories(String organizationName, int numberOfMostForkedRepositories);
 

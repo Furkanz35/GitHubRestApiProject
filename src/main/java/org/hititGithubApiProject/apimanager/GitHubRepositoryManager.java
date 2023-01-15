@@ -1,4 +1,4 @@
-package org.hititGithubApiProject.RepositoryManager;
+package org.hititGithubApiProject.apimanager;
 
 import com.google.gson.Gson;
 import org.hititGithubApiProject.comparators.sortByForkQuantity;
@@ -9,7 +9,7 @@ import org.hititGithubApiProject.entites.Contributor;
 import org.hititGithubApiProject.entites.Repository;
 import org.apache.http.client.utils.URIBuilder;
 import org.hititGithubApiProject.entites.User;
-import org.hititGithubApiProject.urls.AbstractUrlsUtil;
+import org.hititGithubApiProject.urls.UrlsUtil;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -23,14 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GitHubRepositoryManager implements RepositoryManager {
+public class GitHubRepositoryManager implements RepositoryAndContributorManager {
 
     private static final Gson gson = new Gson();
-    private List<RepositoryDomainObject> repositoryDomainObjectList = null;
-    private List<ContributorDomainObject> contributorDomainObjectList = null;
-    private List<Repository> repositoryList = null;
-    private List<Contributor> contributorList = null;
-    private List<User> userList = null;
+    private List<RepositoryDomainObject> repositoryDomainObjectList = new ArrayList<>();
+    private List<ContributorDomainObject> contributorDomainObjectList = new ArrayList<>();
+    private List<Repository> repositoryList = new ArrayList<>();
+    private List<Contributor> contributorList = new ArrayList<>();
+    private List<User> userList = new ArrayList<>();
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     private int pageCountForRepositoryUrl;
@@ -70,7 +70,7 @@ public class GitHubRepositoryManager implements RepositoryManager {
             }
         }
         contributorList = getContributorsFromResponse(httpResponseForReposContributorsUrls);
-        contributorList = selectFromAllContributors(contributorList, repositoryList, numberOfTopContributors);
+        contributorList = selectFromAllContributors(contributorList, numberOfTopContributors);
         return getContributorDomainObjectListFromContributorList(contributorList);
     }
 
@@ -120,7 +120,7 @@ public class GitHubRepositoryManager implements RepositoryManager {
             getRequestForRepositories = HttpRequest.newBuilder()
                     .uri(new URI(URL))
                     .header("accept", "application/json")
-                    .header("Authorization","Bearer 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")
+                    .header("Authorization","Bearer " + UrlsUtil.AUTHORIZATION_API_KEY)
                     .GET()
                     .build();
         } catch (URISyntaxException e) {
@@ -151,28 +151,35 @@ public class GitHubRepositoryManager implements RepositoryManager {
     private HttpResponse<String> getHttpResponseOfNextPage(final String URL) {
         URIBuilder ub = null;
         try {
-            ub = new URIBuilder(URL).addParameter("page", String.valueOf(pageCountForRepositoryUrl)).addParameter("per_page", String.valueOf(100));
+            ub = new URIBuilder(URL)
+                    .addParameter("page", String.valueOf(pageCountForRepositoryUrl))
+                    .addParameter("per_page", String.valueOf(100));
         } catch (URISyntaxException e) {
             System.out.println("Illegal URL information!");
             e.printStackTrace();
         }
         assert ub != null;
-        System.out.println(pageCountForRepositoryUrl + ". page is in progress for Url = " + ub.toString());
+        System.out.println(pageCountForRepositoryUrl + ". page is in progress for Url = " + ub);
         return getHttpResponse(ub.toString());
     }
 
     private List<ContributorDomainObject> getContributorDomainObjectListFromContributorList(List<Contributor> contributorList){
-        List<String> usersUrl = AbstractUrlsUtil.getUsersUrlFromContributors(contributorList);
+        List<String> usersUrl = UrlsUtil.getUsersUrlFromContributors(contributorList);
         userList = getUsersFromUrl(usersUrl);
-        contributorDomainObjectList = new ArrayList<ContributorDomainObject>();
+        contributorDomainObjectList = new ArrayList<>();
         for(int i = 0; i < contributorList.size(); ++i) {
-            contributorDomainObjectList.add(new ContributorDomainObject(contributorList.get(i).getRepository(), contributorList.get(i).getLogin(), contributorList.get(i).getContributions(), userList.get(i).getFollowers()) );
+            contributorDomainObjectList.add(
+                    new ContributorDomainObject(
+                            contributorList.get(i).getRepository(),
+                            contributorList.get(i).getLogin(), contributorList.get(i).getContributions(),
+                            userList.get(i).getFollowers())
+            );
         }
         return contributorDomainObjectList;
     }
 
     private List<RepositoryDomainObject> getRepositoryDomainObjectListFromRepositoryList(List<Repository> repositoryList){
-        repositoryDomainObjectList = new ArrayList<RepositoryDomainObject>();
+        repositoryDomainObjectList = new ArrayList<>();
         for (Repository repository : repositoryList) {
             repositoryDomainObjectList.add(new RepositoryDomainObject(
                     repository.getName(),
@@ -210,7 +217,7 @@ public class GitHubRepositoryManager implements RepositoryManager {
             return false;
         }
     }
-    private List<Contributor> selectFromAllContributors(List<Contributor> contributorList, List<Repository> repositoryList, int numberOfTopContributors){
+    private List<Contributor> selectFromAllContributors(List<Contributor> contributorList,  int numberOfTopContributors){
         List<Contributor> selectedContributors = new ArrayList<>();
         int count = 1;
         for(int i = 0; i < contributorList.size() - 1; ++i) {
@@ -232,7 +239,8 @@ public class GitHubRepositoryManager implements RepositoryManager {
         if(repositoryList.size() >= numberOfMostForkedRepositories)
             repositoryList = repositoryList.subList(0, numberOfMostForkedRepositories);
         else {
-            System.out.println("Organization include less Repository Count from entered Most Forked Repository count, all of the repositories of related organization will be listed");
+            System.out.println("Organization include less Repository Count from entered Most Forked Repository count," +
+                    " all of the repositories of related organization will be listed");
         }
         return repositoryList;
     }
@@ -262,19 +270,11 @@ public class GitHubRepositoryManager implements RepositoryManager {
             int sizeOfContributorList = contributorList.size();
             contributorList.addAll(gson.fromJson(contributorResponse.body(), contributorArrayListType));
             for (int j = sizeOfContributorList; j < contributorList.size(); ++j) {
-                contributorList.get(j).setRepository(AbstractUrlsUtil.foundRepoNameFromRepoContributorUrl(contributorResponse.uri().toString()));
+                contributorList.get(j).setRepository(UrlsUtil.foundRepoNameFromRepoContributorUrl
+                        (contributorResponse.uri().toString()));
             }
         }
         return contributorList;
-    }
-
-
-    public int getPageCountForRepositoryUrl() {
-        return pageCountForRepositoryUrl;
-    }
-
-    public List<User> getUserList() {
-        return userList;
     }
 
 }
