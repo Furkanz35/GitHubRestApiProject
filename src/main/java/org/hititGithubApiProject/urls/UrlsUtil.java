@@ -11,7 +11,7 @@ import java.util.List;
 public class UrlsUtil {
     private UrlsUtil(){}
 
-    public static final String AUTHORIZATION_API_KEY = "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";
+    public static final String AUTHORIZATION_API_KEY = "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";
     public static final String REPO_BASE_URL = "https://api.github.com/orgs/";
     public static final String REPO_SUB_URL = "/repos";
 
